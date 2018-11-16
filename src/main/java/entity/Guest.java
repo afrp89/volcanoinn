@@ -26,7 +26,8 @@ public class Guest implements Serializable {
     @Column
     private String name;
 
-    @Column String email;
+    @Column
+    private String email;
 
     @OneToMany(mappedBy="guest", fetch=FetchType.LAZY, cascade=CascadeType.ALL)
     private List<Booking> Bookings;
