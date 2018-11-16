@@ -23,12 +23,6 @@ public class Booking implements Serializable {
     private UUID id;
 
     @Column
-    private String email;
-
-    @Column
-    private String fullName;
-
-    @Column
     private Long arrivalDate;
 
     @Column
@@ -39,12 +33,15 @@ public class Booking implements Serializable {
     @JsonIgnore
     private Campsite campsite;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "guest_id")
+    @JsonIgnore
+    private Guest guest;
+
     public Booking() {
     }
 
-    public Booking(String email, String fullName, Long fromDate, Long toDate) {
-        this.email = email;
-        this.fullName = fullName;
+    public Booking(Long fromDate, Long toDate) {
         this.arrivalDate = fromDate;
         this.departureDate = toDate;
     }
@@ -55,22 +52,6 @@ public class Booking implements Serializable {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
     }
 
     public Long getArrivalDate() {
@@ -96,4 +77,13 @@ public class Booking implements Serializable {
     public void setCampsite(Campsite campsite) {
         this.campsite = campsite;
     }
+
+    public Guest getGuest() {
+        return guest;
+    }
+
+    public void setGuest(Guest guest) {
+        this.guest = guest;
+    }
+
 }
