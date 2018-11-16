@@ -6,7 +6,6 @@ _The ultimate hipster holiday_
 
 Master Status: [![CircleCI](https://circleci.com/gh/afrp89/volcanoinn/tree/master.svg?style=svg)](https://circleci.com/gh/afrp89/volcanoinn/tree/master)
 
-
-Develop Status: 
+Develop Status: [![CircleCI](https://circleci.com/gh/afrp89/volcanoinn/tree/develop.svg?style=svg)](https://circleci.com/gh/afrp89/volcanoinn/tree/develop)
 
 
