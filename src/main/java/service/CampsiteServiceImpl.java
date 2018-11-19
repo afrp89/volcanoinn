@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.slf4j.Logger;
@@ -94,21 +95,20 @@ public class CampsiteServiceImpl implements CampsiteService {
     }
 
     @Override
-    public boolean existsBooking(Long bookingId) {
+    public boolean existsBooking(UUID bookingId) {
         return bookingRepository.findById(bookingId).isPresent();
     }
 
     @Override
-    public void deleteBooking(Long bookingId) {
+    public void deleteBooking(UUID bookingId) {
         bookingRepository.deleteById(bookingId);
     }
 
     @Override
-    public void updateBooking(Booking booking, Long bookingId) {
+    public void updateBooking(Booking booking, UUID bookingId) {
         validateUpdateBooking(booking, bookingId);
         Booking oldBooking = bookingRepository.findById(bookingId).get();
-        oldBooking.setEmail(booking.getEmail());
-        oldBooking.setFullName(booking.getFullName());
+        oldBooking.setGuest(booking.getGuest());
         oldBooking.setArrivalDate(booking.getArrivalDate());
         oldBooking.setDepartureDate(booking.getDepartureDate());
         bookingRepository.save(oldBooking);
@@ -124,7 +124,7 @@ public class CampsiteServiceImpl implements CampsiteService {
     }
 
     @Override
-    public Booking getBooking(Long bookingId) {
+    public Booking getBooking(UUID bookingId) {
         return bookingRepository.findById(bookingId).get();
     }
 
@@ -196,14 +196,14 @@ public class CampsiteServiceImpl implements CampsiteService {
         }
     }
 
-    private void validateUpdateBooking(Booking booking, Long bookingId) {
+    private void validateUpdateBooking(Booking booking, UUID bookingId) {
         LocalDate arrivalDate = Utilities.getDateFromUnixTime(booking.getArrivalDate());
         LocalDate departureDate = Utilities.getDateFromUnixTime(booking.getDepartureDate());
 
         validateDateParameters(arrivalDate, departureDate);
 
         /* Retrieve all bookings except the one to be updated */
-        List<Booking> bookings = entityManager.createQuery("SELECT rs FROM Booking rs WHERE campsite_id = :campsite_id AND id != :booking_id", Booking.class)
+        List<Booking> bookings = entityManager.createQuery("SELECT bk FROM Booking bk WHERE campsite_id = :campsite_id AND id != :booking_id", Booking.class)
             .setParameter("campsite_id", bookingRepository.findById(bookingId).get().getCampsite().getId())
             .setParameter("booking_id", bookingId)
             .getResultList();

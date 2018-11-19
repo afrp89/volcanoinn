@@ -1,6 +1,7 @@
 package controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class BookingController {
 
     @RequestMapping(value = "/{bookingId}", method = RequestMethod.GET)
     public ResponseEntity<?> getBooking(
-        @PathVariable(value="bookingId") Long bookingId, UriComponentsBuilder ucBuilder) {
+        @PathVariable(value="bookingId") UUID bookingId, UriComponentsBuilder ucBuilder) {
 
         HttpHeaders headers = new HttpHeaders();
         if (!service.existsBooking(bookingId)) {
@@ -59,7 +60,7 @@ public class BookingController {
     @RequestMapping(value = "/{bookingId}", method = RequestMethod.PUT)
     public ResponseEntity<?> updateBooking(
         @RequestBody Booking booking,
-        @PathVariable(value="bookingId") Long bookingId, UriComponentsBuilder ucBuilder) {
+        @PathVariable(value="bookingId") UUID bookingId, UriComponentsBuilder ucBuilder) {
 
         HttpHeaders headers = new HttpHeaders();
         if (!service.existsBooking(bookingId)) {
@@ -81,7 +82,7 @@ public class BookingController {
     }
 
     @RequestMapping(value = "/{bookingId}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteBooking(@PathVariable(value="bookingId") Long bookingId, UriComponentsBuilder ucBuilder) {
+    public ResponseEntity<?> deleteBooking(@PathVariable(value="bookingId") UUID bookingId, UriComponentsBuilder ucBuilder) {
 
         HttpHeaders headers = new HttpHeaders();
         if (!service.existsBooking(bookingId)) {

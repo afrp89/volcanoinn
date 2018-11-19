@@ -2,6 +2,7 @@ package service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import entity.Booking;
 import entity.Campsite;
 
@@ -13,15 +14,15 @@ public interface CampsiteService {
 
     void booking(Booking booking, Long campsiteId);
 
-    boolean existsBooking(Long bookingId);
+    boolean existsBooking(UUID bookingId);
 
-    void deleteBooking(Long bookingId);
+    void deleteBooking(UUID bookingId);
 
-    void updateBooking(Booking booking, Long bookingId);
+    void updateBooking(Booking booking, UUID bookingId);
 
     List<Campsite> getCampsitesAvailability(LocalDate arrivalDate, LocalDate departureDate);
 
-    Booking getBooking(Long bookingId);
+    Booking getBooking(UUID bookingId);
 
     List<Booking> getAllBookings();
 
