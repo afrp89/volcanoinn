@@ -2,7 +2,6 @@ package com.around.volcanoinn.springboot.controller;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +40,13 @@ public class CampsiteController {
 
         HttpHeaders headers = new HttpHeaders();
         Optional<Campsite> optionalCampsite = service.getCampsiteAvailability(cmpsId, Optional.ofNullable(Utilities.getDateFromUnixTime(fromDate)), Optional.ofNullable(Utilities.getDateFromUnixTime(toDate)));
+        headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(cmpsId).toUri());
+        CustomErrorType error = getCustomErrorType(cmpsId);
+        ResponseEntity customErrorTypeResponseEntity = new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
         optionalCampsite.ifPresent(campsite -> headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(campsite.getId()).toUri()));
-        return service.existsCampsite(cmpsId).map(campsite -> {
-            headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(cmpsId).toUri());
-            CustomErrorType error = getCustomErrorType(cmpsId);
-            return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
-        }).orElseGet((Supplier<? extends ResponseEntity<CustomErrorType>>) optionalCampsite.map(campsite -> new ResponseEntity<>(campsite, headers, HttpStatus.OK)).get());
+        return service.existsCampsite(cmpsId).map(campsiteExists ->
+            optionalCampsite.map(campsite ->
+                new ResponseEntity<>(campsite, headers, HttpStatus.OK)).get()).orElse(customErrorTypeResponseEntity);
 
     }
 
@@ -71,25 +71,22 @@ public class CampsiteController {
 
         HttpHeaders headers = new HttpHeaders();
 
-        if (!service.existsCampsite(cmpsId)) {
-            logError("Campsite with ID => " + cmpsId + " does not exist");
-            CustomErrorType error = getCustomErrorType(cmpsId);
-            return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
-        }
+       return service.existsCampsite(cmpsId).map(campsite -> {
         try {
             service.booking(booking, cmpsId);
             logger.debug("Created booking with ID => " + booking.getId());
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(booking.getId()).toUri());
             return new ResponseEntity<>(booking, headers, HttpStatus.CREATED);
         } catch (RuntimeException r) {
-            logError("Unable to booking campsite, cause => ".concat(r.getMessage()));
-            CustomErrorType error = new CustomErrorType("Unable to booking campsite, cause => " + r.getMessage());
-            return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
+            return logError(headers, cmpsId, "Unable to booking campsite, cause => ".concat(r.getMessage()));
         }
+        }).orElse(logError(headers,cmpsId, "Campsite with ID => " + cmpsId + " does not exist"));
     }
 
-    private void logError(String errorMessage) {
+    private ResponseEntity<?> logError(HttpHeaders headers, Long cmpsId, String errorMessage) {
         logger.error(errorMessage);
+        CustomErrorType error = getCustomErrorType(cmpsId);
+        return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
     }
 
     private CustomErrorType getCustomErrorType(@PathVariable("cmpsId") Long cmpsId) {
