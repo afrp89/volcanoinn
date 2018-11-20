@@ -1,4 +1,4 @@
-package entity;
+package com.around.volcanoinn.springboot.entity;
 
 import java.io.Serializable;
 import java.util.UUID;

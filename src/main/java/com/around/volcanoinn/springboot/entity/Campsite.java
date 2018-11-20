@@ -1,4 +1,4 @@
-package entity;
+package com.around.volcanoinn.springboot.entity;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,9 +15,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 @Entity
-public class Guest implements Serializable {
+public class Campsite implements Serializable {
 
-    private static final long serialVersionUID = -1338699261077219037L;
+    private static final long serialVersionUID = 6802986412258921333L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -26,10 +26,10 @@ public class Guest implements Serializable {
     @Column
     private String name;
 
-    @Column
-    private String email;
-
-    @OneToMany(mappedBy="guest", fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+    @Transient
+    private Set<Long> availableDays;
+    
+    @OneToMany(mappedBy="campsite", fetch=FetchType.LAZY, cascade=CascadeType.ALL)
     private List<Booking> Bookings;
 
     public Long getId() {
@@ -56,4 +56,11 @@ public class Guest implements Serializable {
         this.Bookings = Bookings;
     }
 
+    public Set<Long> getAvailableDays() {
+        return availableDays;
+    }
+
+    public void setAvailableDays(Set<Long> availableDays) {
+        this.availableDays = availableDays;
+    }
 }
