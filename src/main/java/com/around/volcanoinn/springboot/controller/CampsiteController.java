@@ -1,6 +1,7 @@
 package com.around.volcanoinn.springboot.controller;
 
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,29 +31,26 @@ public class CampsiteController {
     @Autowired
     CampsiteService service;
 
-    @RequestMapping(path = "/{cmpsId}" , method = RequestMethod.GET, produces= { "application/json" })
+    @RequestMapping(path = "/{campsiteId}", method = RequestMethod.GET, produces = {"application/json"})
     public ResponseEntity<?> getCampsiteAvailabilityDateRange(
-        @PathVariable(value="cmpsId") Long cmpsId,
-        @RequestParam(value="fromDate", required = false) Long fromDate,
-        @RequestParam(value="toDate", required = false) Long toDate,
+        @PathVariable(value = "campsiteId") Long campsiteId,
+        @RequestParam(value = "fromDate", required = false) Long fromDate,
+        @RequestParam(value = "toDate", required = false) Long toDate,
         UriComponentsBuilder ucBuilder) {
-
         HttpHeaders headers = new HttpHeaders();
-        if (!service.existsCampsite(cmpsId)) {
-            headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(cmpsId).toUri());
-            CustomErrorType error = getCustomErrorType(cmpsId);
-            return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
-        } else {
-            Campsite campsite = service.getCampsiteAvailability(cmpsId, Utilities.getDateFromUnixTime(fromDate), Utilities.getDateFromUnixTime(toDate));
-            headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(campsite.getId()).toUri());
-            return new ResponseEntity<Campsite>(campsite, headers, HttpStatus.OK);
-        }
+        Optional<Campsite> optionalCampsite = service.getCampsiteAvailability(campsiteId, Optional.ofNullable(Utilities.getDateFromUnixTime(fromDate)), Optional.ofNullable(Utilities.getDateFromUnixTime(toDate)));
+        headers.setLocation(ucBuilder.path("/campsite/{campsiteId}").buildAndExpand(campsiteId).toUri());
+        optionalCampsite.ifPresent(campsite -> headers.setLocation(ucBuilder.path("/campsite/{campsiteId}").buildAndExpand(campsite.getId()).toUri()));
+        return service.existsCampsite(campsiteId).flatMap(campsiteExists ->
+            optionalCampsite.map(campsite ->
+                new ResponseEntity(campsite, headers, HttpStatus.OK))).orElse(logError(headers, campsiteId, "Campsite with ID => " + campsiteId + " does not exist"));
+
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces= { "application/json" })
-    ResponseEntity<List<Campsite>>getAllCampsitesAvailability(
-        @RequestParam(value="fromDate", required = false) Long fromDate,
-        @RequestParam(value="toDate", required = false) Long toDate, UriComponentsBuilder ucBuilder) {
+    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"})
+    ResponseEntity<List<Campsite>> getAllCampsitesAvailability(
+        @RequestParam(value = "fromDate", required = false) Long fromDate,
+        @RequestParam(value = "toDate", required = false) Long toDate, UriComponentsBuilder ucBuilder) {
 
         List<Campsite> campsites = service.getCampsitesAvailability(Utilities.getDateFromUnixTime(fromDate), Utilities.getDateFromUnixTime(toDate));
         HttpHeaders headers = new HttpHeaders();
@@ -61,37 +59,34 @@ public class CampsiteController {
     }
 
 
-    @RequestMapping(value = "/{cmpsId}/booking", method = RequestMethod.POST)
+    @RequestMapping(value = "/{campsiteId}/booking", method = RequestMethod.POST)
     public ResponseEntity<?> bookingCampsite(
         @RequestBody Booking booking,
-        @PathVariable(value="cmpsId") Long cmpsId, UriComponentsBuilder ucBuilder) {
+        @PathVariable(value = "campsiteId") Long campsiteId, UriComponentsBuilder ucBuilder) {
 
-        logger.debug("Attempting to booking campsite => " + cmpsId + " with booking => " + booking);
+        logger.debug("Attempting to booking campsite => " + campsiteId + " with booking => " + booking);
 
         HttpHeaders headers = new HttpHeaders();
 
-        if (!service.existsCampsite(cmpsId)) {
-            logError("Campsite with ID => " + cmpsId + " does not exist");
-            CustomErrorType error = getCustomErrorType(cmpsId);
-            return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
-        }
+       return service.existsCampsite(campsiteId).map(campsite -> {
         try {
-            service.booking(booking, cmpsId);
+            service.booking(booking, campsiteId);
             logger.debug("Created booking with ID => " + booking.getId());
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(booking.getId()).toUri());
             return new ResponseEntity<>(booking, headers, HttpStatus.CREATED);
         } catch (RuntimeException r) {
-            logError( "Unable to booking campsite, cause => ".concat(r.getMessage()));
-            CustomErrorType error =  new CustomErrorType("Unable to booking campsite, cause => " + r.getMessage());
-            return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
+            return logError(headers, campsiteId, "Unable to booking campsite, cause => ".concat(r.getMessage()));
         }
+        }).orElse(logError(headers,campsiteId, "Campsite with ID => " + campsiteId + " does not exist"));
     }
 
-    private void logError(String errorMessage) {
+    private ResponseEntity logError(HttpHeaders headers, Long campsiteId, String errorMessage) {
         logger.error(errorMessage);
+        CustomErrorType error = getCustomErrorType(campsiteId);
+        return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
     }
 
-    private CustomErrorType getCustomErrorType(@PathVariable("cmpsId") Long cmpsId) {
-        return new CustomErrorType("Campsite with ID => " + cmpsId + " does not exist");
+    private CustomErrorType getCustomErrorType(@PathVariable("campsiteId") Long campsiteId) {
+        return new CustomErrorType("Campsite with ID => " + campsiteId + " does not exist");
     }
 }

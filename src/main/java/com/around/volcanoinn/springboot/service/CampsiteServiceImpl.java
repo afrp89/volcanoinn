@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -33,49 +34,42 @@ public class CampsiteServiceImpl implements CampsiteService {
     EntityManager entityManager;
 
     @Override
-    public Campsite getCampsiteAvailability(Long campsiteId, LocalDate fromDate, LocalDate toDate) {
-
+    public Optional<Campsite> getCampsiteAvailability(Long campsiteId, Optional<LocalDate> optionalFromDate, Optional<LocalDate> optionalToDate) {
         LocalDate today = LocalDate.now();
+        validateDates(today, optionalFromDate.orElseThrow(RuntimeException::new), optionalToDate.orElseThrow(RuntimeException::new));
+        LocalDate fromDate = today.plusDays(Utilities.MINIMUM_DAYS_AHEAD);
+        LocalDate toDate = fromDate.plusMonths(Utilities.MAXIMUM_MONTHS_AHEAD);
 
-        if (fromDate != null && toDate != null) {
-            if (fromDate.isEqual(toDate))
-                throw new RuntimeException("fromDate and toDate could not be the same");
-            if (fromDate.isBefore(today) || fromDate.isEqual(today))
-                throw new RuntimeException("fromDate could not be equal or before current date");
-            if (toDate.isBefore(today) || toDate.isEqual(today))
-                throw new RuntimeException("toDate could not be equal or before current date");
-            if (toDate.isBefore(fromDate))
-                throw new RuntimeException("toDate should be after fromDate");
-        } else {
-            if (fromDate != null ^ toDate != null) {
-                throw new RuntimeException("Cannot send only one date");
-            } else {
-                fromDate = today.plusDays(Utilities.MINIMUM_DAYS_AHEAD);
-                toDate = fromDate.plusMonths(Utilities.MAXIMUM_MONTHS_AHEAD);
-            }
-        }
+        return getCampsite(campsiteId, fromDate, toDate);
+    }
 
-        logger.debug("From date => " + fromDate);
-        logger.debug("To date => " + toDate);
-
-        Campsite campsite = campsiteRepository.findById(campsiteId).get();
-        if (campsite != null) {
-            campsite.setAvailableDays(new HashSet<Long>());
-            for (LocalDate i = fromDate; i.isBefore(toDate); i = i.plusDays(1)) {
+    private Optional<Campsite> getCampsite(Long campsiteId, LocalDate fromDate, LocalDate toDate) {
+        return campsiteRepository.findById(campsiteId).map(campsite -> {
+            campsite.setAvailableDays(new HashSet<>());
+            for (LocalDate actual = fromDate; actual.isBefore(toDate); actual = actual.plusDays(1)) {
                 if (campsite.getBookings().isEmpty()) {
-                    setAvailableDay(campsite, i);
+                    setAvailableDay(campsite, actual);
                 } else {
-                    for (Booking r : campsite.getBookings()) {
-                        if (!dateOverlapsWithBooking(i, r)) {
-                            setAvailableDay(campsite, i);
-                        } else {
-                            break;
+                    LocalDate finalActual = actual;
+                    campsite.getBookings().stream().filter(booking -> !dateOverlapsWithBooking(finalActual, booking)).forEach(booking -> {
+                        setAvailableDay(campsite, finalActual);
                         }
-                    }
+                    );
                 }
             }
-        }
-        return campsite;
+            return campsite;
+        });
+    }
+
+    private void validateDates(LocalDate today, LocalDate fromDate, LocalDate toDate) {
+        if (fromDate.isEqual(toDate))
+            throw new RuntimeException("fromDate and toDate could not be the same");
+        if (fromDate.isBefore(today) || fromDate.isEqual(today))
+            throw new RuntimeException("fromDate could not be equal or before current date");
+        if (toDate.isBefore(today) || toDate.isEqual(today))
+            throw new RuntimeException("toDate could not be equal or before current date");
+        if (toDate.isBefore(fromDate))
+            throw new RuntimeException("toDate should be after fromDate");
     }
 
     private void setAvailableDay(Campsite campsite, LocalDate fromDate) {
@@ -85,8 +79,8 @@ public class CampsiteServiceImpl implements CampsiteService {
     }
 
     @Override
-    public boolean existsCampsite(Long campsiteId) {
-        return campsiteRepository.existsById(campsiteId);
+    public Optional<Campsite> existsCampsite(Long campsiteId) {
+        return campsiteRepository.findById(campsiteId);
     }
 
     @Override
@@ -119,8 +113,8 @@ public class CampsiteServiceImpl implements CampsiteService {
     @Override
     public List<Campsite> getCampsitesAvailability(LocalDate arrivalDate, LocalDate departureDate) {
         List<Campsite> campsites = (List<Campsite>) campsiteRepository.findAll();
-        for (Campsite c : campsites) {
-            getCampsiteAvailability(c.getId(), arrivalDate, departureDate);
+        for (Campsite campsite : campsites) {
+            getCampsiteAvailability(campsite.getId(), Optional.of(arrivalDate), Optional.of(departureDate));
         }
         return campsites;
     }
