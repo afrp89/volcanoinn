@@ -36,10 +36,9 @@ public class CampsiteServiceImpl implements CampsiteService {
     @Override
     public Optional<Campsite> getCampsiteAvailability(Long campsiteId, Optional<LocalDate> optionalFromDate, Optional<LocalDate> optionalToDate) {
         LocalDate today = LocalDate.now();
-        validateDates(today, optionalFromDate.orElseThrow(RuntimeException::new), optionalToDate.orElseThrow(RuntimeException::new));
         LocalDate fromDate = today.plusDays(Utilities.MINIMUM_DAYS_AHEAD);
         LocalDate toDate = fromDate.plusMonths(Utilities.MAXIMUM_MONTHS_AHEAD);
-
+        validateDates(today, optionalFromDate.orElse(fromDate), optionalToDate.orElse(toDate));
         return getCampsite(campsiteId, fromDate, toDate);
     }
 
@@ -52,7 +51,7 @@ public class CampsiteServiceImpl implements CampsiteService {
                 } else {
                     LocalDate finalActual = actual;
                     campsite.getBookings().stream().filter(booking -> !dateOverlapsWithBooking(finalActual, booking)).forEach(booking -> {
-                        setAvailableDay(campsite, finalActual);
+                            setAvailableDay(campsite, finalActual);
                         }
                     );
                 }
@@ -114,7 +113,7 @@ public class CampsiteServiceImpl implements CampsiteService {
     public List<Campsite> getCampsitesAvailability(LocalDate arrivalDate, LocalDate departureDate) {
         List<Campsite> campsites = (List<Campsite>) campsiteRepository.findAll();
         for (Campsite campsite : campsites) {
-            getCampsiteAvailability(campsite.getId(), Optional.of(arrivalDate), Optional.of(departureDate));
+            getCampsiteAvailability(campsite.getId(), Optional.ofNullable(arrivalDate), Optional.ofNullable(departureDate));
         }
         return campsites;
     }
