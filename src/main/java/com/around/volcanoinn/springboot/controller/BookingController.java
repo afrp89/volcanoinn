@@ -36,7 +36,11 @@ public class BookingController {
         HttpHeaders headers = new HttpHeaders();
         List<Booking> bookings = service.getAllBookings();
         headers.setLocation(ucBuilder.path("/booking").buildAndExpand().toUri());
-        return new ResponseEntity<List<Booking>>(bookings, headers, HttpStatus.OK);
+        return getResponseEntity(headers, bookings);
+    }
+
+    private ResponseEntity<?> getResponseEntity(HttpHeaders headers, List<Booking> bookings) {
+        return new ResponseEntity<>(bookings, headers, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{bookingId}", method = RequestMethod.GET)
@@ -46,15 +50,18 @@ public class BookingController {
         HttpHeaders headers = new HttpHeaders();
         if (!service.existsBooking(bookingId)) {
             String errorStr = "Booking not found";
-            CustomErrorType error = new CustomErrorType(errorStr);
-            logger.error(errorStr);
+            CustomErrorType error = getCustomErrorType(errorStr);
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(bookingId).toUri());
-            return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
+            return getResponseEntity(headers, error, HttpStatus.NO_CONTENT);
         } else {
             Booking booking = service.getBooking(bookingId);
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(bookingId).toUri());
-            return new ResponseEntity<Booking>(booking, headers, HttpStatus.OK);
+            return getBookingResponseEntity(headers, booking);
         }
+    }
+
+    private ResponseEntity<Booking> getBookingResponseEntity(HttpHeaders headers, Booking booking) {
+        return new ResponseEntity<>(booking, headers, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{bookingId}", method = RequestMethod.PUT)
@@ -64,19 +71,19 @@ public class BookingController {
 
         HttpHeaders headers = new HttpHeaders();
         if (!service.existsBooking(bookingId)) {
-            CustomErrorType error = new CustomErrorType("Booking not found");
+            CustomErrorType error = getCustomErrorType("Booking not found");
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(bookingId).toUri());
-            return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
+            return getResponseEntity(headers, error, HttpStatus.NO_CONTENT);
         } else {
             try {
                 service.updateBooking(booking, bookingId);
                 headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(bookingId).toUri());
-                return new ResponseEntity<Booking>(booking, headers, HttpStatus.OK);
+                return getBookingResponseEntity(headers, booking);
             } catch (RuntimeException r) {
                 String errStr = "Unable to update booking, cause => " + r.getMessage();
-                logger.error(errStr);
-                CustomErrorType error =  new CustomErrorType(errStr);
-                return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
+
+                CustomErrorType error = getCustomErrorType(errStr);
+                return getResponseEntity(headers, error, HttpStatus.NO_CONTENT);
             }
         }
     }
@@ -86,14 +93,23 @@ public class BookingController {
 
         HttpHeaders headers = new HttpHeaders();
         if (!service.existsBooking(bookingId)) {
-            CustomErrorType error = new CustomErrorType("Booking not found");
+            CustomErrorType error = getCustomErrorType("Booking not found");
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(bookingId).toUri());
-            return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
+            return getResponseEntity(headers, error, HttpStatus.NO_CONTENT);
         }	else {
             service.deleteBooking(bookingId);
-            CustomErrorType msg = new CustomErrorType("Booking deleted");
+            CustomErrorType msg = getCustomErrorType("Booking deleted");
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(bookingId).toUri());
-            return new ResponseEntity<CustomErrorType>(msg, headers, HttpStatus.OK);
+            return getResponseEntity(headers, msg, HttpStatus.OK);
         }
+    }
+
+    private ResponseEntity<?> getResponseEntity(HttpHeaders headers, CustomErrorType msg, HttpStatus ok) {
+        return new ResponseEntity<>(msg, headers, ok);
+    }
+
+    private CustomErrorType getCustomErrorType(String errStr) {
+        logger.error(errStr);
+        return new CustomErrorType(errStr);
     }
 }
