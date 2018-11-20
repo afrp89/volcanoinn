@@ -39,9 +39,11 @@ public class CampsiteServiceImpl implements CampsiteService {
         validateDates(today, optionalFromDate.orElseThrow(RuntimeException::new), optionalToDate.orElseThrow(RuntimeException::new));
         LocalDate fromDate = today.plusDays(Utilities.MINIMUM_DAYS_AHEAD);
         LocalDate toDate = fromDate.plusMonths(Utilities.MAXIMUM_MONTHS_AHEAD);
-        logger.debug("From date => " + fromDate);
-        logger.debug("To date => " + toDate);
 
+        return getCampsite(campsiteId, fromDate, toDate);
+    }
+
+    private Optional<Campsite> getCampsite(Long campsiteId, LocalDate fromDate, LocalDate toDate) {
         return campsiteRepository.findById(campsiteId).map(campsite -> {
             campsite.setAvailableDays(new HashSet<>());
             for (LocalDate actual = fromDate; actual.isBefore(toDate); actual = actual.plusDays(1)) {
@@ -111,8 +113,8 @@ public class CampsiteServiceImpl implements CampsiteService {
     @Override
     public List<Campsite> getCampsitesAvailability(LocalDate arrivalDate, LocalDate departureDate) {
         List<Campsite> campsites = (List<Campsite>) campsiteRepository.findAll();
-        for (Campsite c : campsites) {
-            getCampsiteAvailability(c.getId(), Optional.of(arrivalDate), Optional.of(departureDate));
+        for (Campsite campsite : campsites) {
+            getCampsiteAvailability(campsite.getId(), Optional.of(arrivalDate), Optional.of(departureDate));
         }
         return campsites;
     }
