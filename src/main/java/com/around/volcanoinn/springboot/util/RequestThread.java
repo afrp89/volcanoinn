@@ -6,10 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.around.volcanoinn.springboot.entity.Booking;
 
-
+@Component
 public class RequestThread implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestThread.class);

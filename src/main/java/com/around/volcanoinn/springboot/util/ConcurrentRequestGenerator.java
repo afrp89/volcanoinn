@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.around.volcanoinn.springboot.entity.Booking;
 
+@Component
 public class ConcurrentRequestGenerator {
 
     private int numPoolThreads;

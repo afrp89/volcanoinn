@@ -1,6 +1,8 @@
 package com.around.volcanoinn.springboot.util;
 
+import org.springframework.stereotype.Component;
 
+@Component
 public class CustomErrorType {
 
     private String errorMessage;
