@@ -29,9 +29,22 @@ public class RequestThread implements Runnable {
 
     @Override
     public void run() {
+        HttpEntity<Booking> requestEntity = getBookingHttpEntity();
+        post(requestEntity);
+    }
+
+    private HttpEntity<Booking> getBookingHttpEntity() {
+        HttpHeaders headers = getHttpHeaders();
+        return new HttpEntity<>(booking, headers);
+    }
+
+    private HttpHeaders getHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Booking> requestEntity = new HttpEntity<>(booking, headers);
+        return headers;
+    }
+
+    private void post(HttpEntity<Booking> requestEntity) {
         RestTemplate restTemplate = new RestTemplate();
         try {
             URI bookingUri = restTemplate.postForLocation(serviceUri, requestEntity);
