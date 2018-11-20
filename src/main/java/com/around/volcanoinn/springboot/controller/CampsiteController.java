@@ -1,4 +1,4 @@
-package controller;
+package com.around.volcanoinn.springboot.controller;
 
 import java.util.List;
 import org.slf4j.Logger;
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import entity.Booking;
-import entity.Campsite;
-import service.CampsiteService;
-import util.CustomErrorType;
-import util.Utilities;
+import com.around.volcanoinn.springboot.entity.Booking;
+import com.around.volcanoinn.springboot.entity.Campsite;
+import com.around.volcanoinn.springboot.service.CampsiteService;
+import com.around.volcanoinn.springboot.util.CustomErrorType;
+import com.around.volcanoinn.springboot.util.Utilities;
 
 
 @RestController

@@ -1,4 +1,4 @@
-package controller;
+package com.around.volcanoinn.springboot.controller;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;

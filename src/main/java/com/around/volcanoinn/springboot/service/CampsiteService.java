@@ -1,10 +1,10 @@
-package service;
+package com.around.volcanoinn.springboot.service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import entity.Booking;
-import entity.Campsite;
+import com.around.volcanoinn.springboot.entity.Booking;
+import com.around.volcanoinn.springboot.entity.Campsite;
 
 public interface CampsiteService {
 

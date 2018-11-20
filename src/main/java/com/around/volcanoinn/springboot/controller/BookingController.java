@@ -1,4 +1,4 @@
-package controller;
+package com.around.volcanoinn.springboot.controller;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import entity.Booking;
-import service.CampsiteService;
-import util.CustomErrorType;
+import com.around.volcanoinn.springboot.entity.Booking;
+import com.around.volcanoinn.springboot.service.CampsiteService;
+import com.around.volcanoinn.springboot.util.CustomErrorType;
 
 
 @RestController

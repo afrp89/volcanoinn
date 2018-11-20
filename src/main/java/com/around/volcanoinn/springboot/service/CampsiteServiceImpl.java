@@ -1,4 +1,4 @@
-package service;
+package com.around.volcanoinn.springboot.service;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -15,11 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import entity.Booking;
-import entity.Campsite;
-import repository.BookingRepository;
-import repository.CampsiteRepository;
-import util.Utilities;
+import com.around.volcanoinn.springboot.entity.Booking;
+import com.around.volcanoinn.springboot.entity.Campsite;
+import com.around.volcanoinn.springboot.repository.BookingRepository;
+import com.around.volcanoinn.springboot.repository.CampsiteRepository;
+import com.around.volcanoinn.springboot.util.Utilities;
 
 @Service("campsiteService")
 public class CampsiteServiceImpl implements CampsiteService {

@@ -1,4 +1,4 @@
-package util;
+package com.around.volcanoinn.springboot.util;
 
 
 public class CustomErrorType {
