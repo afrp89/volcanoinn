@@ -40,7 +40,7 @@ public class CampsiteController {
         HttpHeaders headers = new HttpHeaders();
         if (!service.existsCampsite(cmpsId)) {
             headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(cmpsId).toUri());
-            CustomErrorType error =  new CustomErrorType("Campsite with ID => " + cmpsId + " does not exist");
+            CustomErrorType error = getCustomErrorType(cmpsId);
             return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
         } else {
             Campsite campsite = service.getCampsiteAvailability(cmpsId, Utilities.getDateFromUnixTime(fromDate), Utilities.getDateFromUnixTime(toDate));
@@ -57,7 +57,7 @@ public class CampsiteController {
         List<Campsite> campsites = service.getCampsitesAvailability(Utilities.getDateFromUnixTime(fromDate), Utilities.getDateFromUnixTime(toDate));
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(ucBuilder.path("/campsite").build().toUri());
-        return new ResponseEntity<List<Campsite>>(campsites, headers, HttpStatus.OK);
+        return new ResponseEntity<>(campsites, headers, HttpStatus.OK);
     }
 
 
@@ -71,19 +71,27 @@ public class CampsiteController {
         HttpHeaders headers = new HttpHeaders();
 
         if (!service.existsCampsite(cmpsId)) {
-            logger.error("Campsite with ID => " + cmpsId + " does not exist");
-            CustomErrorType error =  new CustomErrorType("Campsite with ID => " + cmpsId + " does not exist");
-            return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
+            logError("Campsite with ID => " + cmpsId + " does not exist");
+            CustomErrorType error = getCustomErrorType(cmpsId);
+            return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
         }
         try {
             service.booking(booking, cmpsId);
             logger.debug("Created booking with ID => " + booking.getId());
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(booking.getId()).toUri());
-            return new ResponseEntity<Booking>(booking, headers, HttpStatus.CREATED);
+            return new ResponseEntity<>(booking, headers, HttpStatus.CREATED);
         } catch (RuntimeException r) {
-            logger.error("Unable to booking campsite, cause => " + r.getMessage());
+            logError( "Unable to booking campsite, cause => ".concat(r.getMessage()));
             CustomErrorType error =  new CustomErrorType("Unable to booking campsite, cause => " + r.getMessage());
-            return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(error, headers, HttpStatus.NO_CONTENT);
         }
+    }
+
+    private void logError(String errorMessage) {
+        logger.error(errorMessage);
+    }
+
+    private CustomErrorType getCustomErrorType(@PathVariable("cmpsId") Long cmpsId) {
+        return new CustomErrorType("Campsite with ID => " + cmpsId + " does not exist");
     }
 }
