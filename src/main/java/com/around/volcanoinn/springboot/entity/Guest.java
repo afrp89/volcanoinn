@@ -36,6 +36,10 @@ public class Guest implements Serializable {
 
     }
 
+    public Guest() {
+
+    }
+
     public Long getId() {
         return id;
     }
