@@ -77,8 +77,8 @@ public class CampsiteServiceImpl implements CampsiteService {
     }
 
     @Override
-    public boolean existsCampsite(Long campsiteId) {
-        return campsiteRepository.existsById(campsiteId);
+    public Optional<Campsite> existsCampsite(Long campsiteId) {
+        return campsiteRepository.findById(campsiteId);
     }
 
     @Override

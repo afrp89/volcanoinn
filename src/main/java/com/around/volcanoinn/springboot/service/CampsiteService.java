@@ -11,7 +11,7 @@ public interface CampsiteService {
 
     Optional<Campsite> getCampsiteAvailability(Long campsiteId, Optional<LocalDate> arrivalDate, Optional<LocalDate> departureDate);
 
-    boolean existsCampsite(Long campsiteId);
+    Optional<Campsite> existsCampsite(Long campsiteId);
 
     void booking(Booking booking, Long campsiteId);
 
