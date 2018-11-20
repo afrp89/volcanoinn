@@ -1,6 +1,7 @@
 package com.around.volcanoinn.springboot.controller;
 
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +44,9 @@ public class CampsiteController {
             CustomErrorType error = getCustomErrorType(cmpsId);
             return new ResponseEntity<CustomErrorType>(error, headers, HttpStatus.NO_CONTENT);
         } else {
-            Campsite campsite = service.getCampsiteAvailability(cmpsId, Utilities.getDateFromUnixTime(fromDate), Utilities.getDateFromUnixTime(toDate));
-            headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(campsite.getId()).toUri());
-            return new ResponseEntity<Campsite>(campsite, headers, HttpStatus.OK);
+            Optional<Campsite> optionalCampsite = service.getCampsiteAvailability(cmpsId, Optional.ofNullable(Utilities.getDateFromUnixTime(fromDate)), Optional.ofNullable(Utilities.getDateFromUnixTime(toDate)));
+            optionalCampsite.ifPresent(campsite ->  headers.setLocation(ucBuilder.path("/campsite/{cmpsId}").buildAndExpand(campsite.getId()).toUri()));
+            return optionalCampsite.map(campsite ->{ return new ResponseEntity<Campsite>(campsite, headers, HttpStatus.OK);}).orElseThrow(RuntimeException::new);
         }
     }
 
