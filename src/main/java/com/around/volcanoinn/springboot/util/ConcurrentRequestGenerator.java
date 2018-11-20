@@ -20,31 +20,63 @@ public class ConcurrentRequestGenerator {
     public ConcurrentRequestGenerator() {
     }
 
-    public ConcurrentRequestGenerator(int numPoolThreads, int numParallelReqs, Booking booking, String serviceUri) {
-        this.numPoolThreads = numPoolThreads;
-        this.numParallelReqs = numParallelReqs;
-        this.booking = booking;
-        this.serviceUri = serviceUri;
-    }
-
     public void run() throws InterruptedException {
         ExecutorService es = Executors.newFixedThreadPool(numPoolThreads);
         List<RequestThread> threads = new ArrayList<>();
         RestTemplate restTemplate = new RestTemplate();
+        executeThreads(es, threads);
+        destroy(es, threads, restTemplate);
 
+    }
+
+    private void executeThreads(ExecutorService es, List<RequestThread> threads) {
         for (int i = 0; i < numParallelReqs; i++) {
             RequestThread requestThread = new RequestThread(booking, serviceUri);
             es.execute(requestThread);
             threads.add(requestThread);
         }
+    }
+
+    private void destroy(ExecutorService es, List<RequestThread> threads, RestTemplate restTemplate)throws InterruptedException {
         es.shutdown();
         es.awaitTermination(2, TimeUnit.MINUTES);
-
-        // Delete created resources
         for (RequestThread rt : threads) {
             if (rt.getResourceUri() != null)
                 restTemplate.delete(rt.getResourceUri());
         }
+    }
+
+
+    public int getNumPoolThreads() {
+        return numPoolThreads;
+    }
+
+    public void setNumPoolThreads(int numPoolThreads) {
+        this.numPoolThreads = numPoolThreads;
+    }
+
+    public int getNumParallelReqs() {
+        return numParallelReqs;
+    }
+
+    public void setNumParallelReqs(int numParallelReqs) {
+        this.numParallelReqs = numParallelReqs;
+    }
+
+    public Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+    }
+
+    public String getServiceUri() {
+        return serviceUri;
+    }
+
+    public void setServiceUri(String serviceUri) {
+        this.serviceUri = serviceUri;
     }
 
 }

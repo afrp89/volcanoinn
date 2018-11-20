@@ -63,15 +63,11 @@ public class CampsiteServiceImpl implements CampsiteService {
             campsite.setAvailableDays(new HashSet<Long>());
             for (LocalDate i = fromDate; i.isBefore(toDate); i = i.plusDays(1)) {
                 if (campsite.getBookings().isEmpty()) {
-                    Long availDay = Instant.from(i.atStartOfDay(ZoneId.systemDefault()).toInstant()).toEpochMilli();
-                    campsite.getAvailableDays().add(availDay);
-                    logger.debug("Available date => " + i);
+                    setAvailableDay(campsite, i);
                 } else {
                     for (Booking r : campsite.getBookings()) {
                         if (!dateOverlapsWithBooking(i, r)) {
-                            Long availDay = Instant.from(i.atStartOfDay(ZoneId.systemDefault()).toInstant()).toEpochMilli();
-                            campsite.getAvailableDays().add(availDay);
-                            logger.debug("Available date => " + i);
+                            setAvailableDay(campsite, i);
                         } else {
                             break;
                         }
@@ -80,6 +76,12 @@ public class CampsiteServiceImpl implements CampsiteService {
             }
         }
         return campsite;
+    }
+
+    private void setAvailableDay(Campsite campsite, LocalDate fromDate) {
+        Long availDay = Instant.from(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant()).toEpochMilli();
+        campsite.getAvailableDays().add(availDay);
+        logger.debug("Available date => " + fromDate);
     }
 
     @Override
