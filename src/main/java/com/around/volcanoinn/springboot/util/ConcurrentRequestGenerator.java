@@ -20,6 +20,14 @@ public class ConcurrentRequestGenerator {
     public ConcurrentRequestGenerator() {
     }
 
+    public ConcurrentRequestGenerator(int numPoolThreads, int numParallelReqs, Booking booking, String serviceUri) {
+        this.numPoolThreads = numPoolThreads;
+        this.numParallelReqs = numParallelReqs;
+        this.booking = booking;
+        this.serviceUri = serviceUri;
+    }
+
+
     public void run() throws InterruptedException {
         ExecutorService es = Executors.newFixedThreadPool(numPoolThreads);
         List<RequestThread> threads = new ArrayList<>();
