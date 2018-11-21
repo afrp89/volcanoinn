@@ -30,7 +30,7 @@ public class VolcanoInnApplication {
                                  BookingRepository bookingRepository) {
         return (args) -> {
             // Fake data
-            IntStream.range(0, 10).mapToObj(Integer::toString).forEach(str -> {
+            IntStream.range(0, 0).mapToObj(Integer::toString).forEach(str -> {
                 Campsite campsite = new Campsite();
                 campsite.setName("Kilawea#".concat(str));
                 campsiteRepository.save(campsite);
