@@ -33,17 +33,16 @@ public class CampsiteController {
 
     @RequestMapping(path = "/{campsiteId}", method = RequestMethod.GET, produces = {"application/json"})
     public ResponseEntity<?> getCampsiteAvailabilityDateRange(
-        @PathVariable(value = "campsiteId") Long campsiteId,
+        @PathVariable(value = "campsiteId") String campsiteId,
         @RequestParam(value = "fromDate", required = false) Long fromDate,
         @RequestParam(value = "toDate", required = false) Long toDate,
         UriComponentsBuilder ucBuilder) {
         HttpHeaders headers = new HttpHeaders();
-        Optional<Campsite> optionalCampsite = service.getCampsiteAvailability(campsiteId, Optional.ofNullable(Utilities.getDateFromUnixTime(fromDate)), Optional.ofNullable(Utilities.getDateFromUnixTime(toDate)));
-        headers.setLocation(ucBuilder.path("/campsite/{campsiteId}").buildAndExpand(campsiteId).toUri());
+        Optional<Campsite> optionalCampsite = service.getCampsiteAvailability(Long.valueOf(campsiteId), Optional.ofNullable(Utilities.getDateFromUnixTime(fromDate)), Optional.ofNullable(Utilities.getDateFromUnixTime(toDate)));
         optionalCampsite.ifPresent(campsite -> headers.setLocation(ucBuilder.path("/campsite/{campsiteId}").buildAndExpand(campsite.getId()).toUri()));
-        return service.existsCampsite(campsiteId).flatMap(campsiteExists ->
+        return service.existsCampsite(Long.valueOf(campsiteId)).flatMap(campsiteExists ->
             optionalCampsite.map(campsite ->
-                new ResponseEntity(campsite, headers, HttpStatus.OK))).orElse(logError(headers, campsiteId, "Campsite with ID => " + campsiteId + " does not exist"));
+                new ResponseEntity(campsite, headers, HttpStatus.OK))).orElse(logError(headers, Long.valueOf(campsiteId), "Campsite with ID => " + campsiteId + " does not exist"));
 
     }
 
@@ -64,7 +63,7 @@ public class CampsiteController {
         @RequestBody Booking booking,
         @PathVariable(value = "campsiteId") Long campsiteId, UriComponentsBuilder ucBuilder) {
 
-        logger.debug("Attempting to booking campsite => " + campsiteId + " with booking => " + booking);
+        logger.debug("Attempting to book campsite => " + campsiteId + " with booking => " + booking);
 
         HttpHeaders headers = new HttpHeaders();
 
@@ -75,7 +74,8 @@ public class CampsiteController {
             headers.setLocation(ucBuilder.path("/booking/{bookingId}").buildAndExpand(booking.getId()).toUri());
             return new ResponseEntity<>(booking, headers, HttpStatus.CREATED);
         } catch (RuntimeException r) {
-            return logError(headers, campsiteId, "Unable to booking campsite, cause => ".concat(r.getMessage()));
+            r.printStackTrace();
+            return logError(headers, campsiteId, "Unable to booking campsite, cause => ".concat(r.toString()));
         }
         }).orElse(logError(headers,campsiteId, "Campsite with ID => " + campsiteId + " does not exist"));
     }
